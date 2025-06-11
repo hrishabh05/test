@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: test-app
-          image: REGION-docker.pkg.dev/PROJECT-ID/REPO-NAME/test-app:latest
+          image: asia-east1-docker.pkg.dev/rs-0123/kyoskdemo/test-app1:1f50d1e
           ports:
             - containerPort: 80
 
