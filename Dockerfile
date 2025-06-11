@@ -1,4 +1,9 @@
 FROM python:3.11-slim
-COPY app/ /app
-CMD ["python", "/app/main.py"]
 
+WORKDIR /app
+COPY app/ /app
+
+RUN pip install flask
+
+EXPOSE 8080
+CMD ["python", "app.py"]
