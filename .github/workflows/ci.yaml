@@ -19,34 +19,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ✅ Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # ✅ Set up the gcloud CLI
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
 
+      # ✅ Configure Docker for pushing to Artifact Registry
       - name: Configure Docker for GAR
-        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}
+        run: |
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}
 
+      # ✅ Get short SHA to use as image tag
       - name: Get short SHA
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      # ✅ Build and push Docker image
       - name: Build and push Docker image
         run: |
           docker build -t $GAR_LOCATION/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${{ steps.vars.outputs.sha_short }} .
           docker push $GAR_LOCATION/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${{ steps.vars.outputs.sha_short }}
 
+      # ✅ Update image tag in deployment.yaml
       - name: Update deployment.yaml
         run: |
           sed -i "s|image: .*|image: $GAR_LOCATION/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${{ steps.vars.outputs.sha_short }}|" deployment.yaml
 
+      # ✅ Commit the change to deployment.yaml
       - name: Commit updated deployment.yaml
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add deployment.yaml
-          git commit -m "Update image tag to ${{ steps.vars.outputs.sha_short }}"
+          git commit -m "Update image tag to ${{ steps.vars.outputs.sha_short }}" || echo "No changes to commit"
           git push
-
