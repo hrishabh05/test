@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: test-app
-          image: asia-east1-docker.pkg.dev/rs-0123/kyoskdemo/test-app1:2df5d79
+          image: asia-east1-docker.pkg.dev/rs-0123/kyoskdemo/test-app1:fd589a5
           ports:
             - containerPort: 8080
           readinessProbe:
